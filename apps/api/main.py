@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 
 from auth import enforce_production_auth_config
 from db.connection import close_pool, get_pool
-from routers import attestations, chain, entries, ingest
+from routers import attestations, chain, entries, ingest, reports
 
 logger = logging.getLogger("trailmark")
 
@@ -38,6 +38,7 @@ app = FastAPI(
 app.include_router(ingest.router)
 app.include_router(entries.router)
 app.include_router(attestations.router)
+app.include_router(reports.router)
 app.include_router(chain.router)
 
 
