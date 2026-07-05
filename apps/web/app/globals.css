@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-navy-900 text-ink antialiased;
+    color-scheme: dark; /* native controls (date pickers, select popups) render dark */
+  }
+  body {
+    font-feature-settings: "tnum" 1; /* tabular numerals — this is a ledger */
+  }
+  ::selection {
+    @apply bg-gold-dim text-navy-950;
+  }
+}
+
+@layer components {
+  /* Small-caps section labels, the docket idiom used across every page */
+  .docket-label {
+    @apply text-[11px] uppercase tracking-docket text-ink-muted font-medium;
+  }
+  .hash-text {
+    @apply font-mono text-[11px] text-ink-muted break-all;
+  }
+  .panel {
+    @apply bg-navy-800 border border-navy-600 rounded-sm;
+  }
+}
