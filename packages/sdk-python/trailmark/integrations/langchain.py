@@ -60,7 +60,11 @@ class TrailMarkCallback(BaseCallbackHandler):
             t._finish(error)
 
     @staticmethod
-    def _name(serialized: dict[str, Any] | None, fallback: str) -> str:
+    def _name(serialized: dict[str, Any] | None, fallback: str, **kwargs: Any) -> str:
+        # langchain-core passes the runnable's name as a kwarg; older paths
+        # carry it inside `serialized`.
+        if kwargs.get("name"):
+            return str(kwargs["name"])
         if serialized:
             if serialized.get("name"):
                 return str(serialized["name"])
@@ -71,7 +75,7 @@ class TrailMarkCallback(BaseCallbackHandler):
     # --------------------------------------------------------------- chains
 
     def on_chain_start(self, serialized, inputs, *, run_id, **kwargs) -> None:
-        self._start(run_id, "chain_run", self._name(serialized, "chain"), inputs)
+        self._start(run_id, "chain_run", self._name(serialized, "chain", **kwargs), inputs)
 
     def on_chain_end(self, outputs, *, run_id, **kwargs) -> None:
         self._end(run_id, outputs)
@@ -82,7 +86,7 @@ class TrailMarkCallback(BaseCallbackHandler):
     # ---------------------------------------------------------------- tools
 
     def on_tool_start(self, serialized, input_str, *, run_id, **kwargs) -> None:
-        self._start(run_id, "tool_call", self._name(serialized, "tool"), input_str)
+        self._start(run_id, "tool_call", self._name(serialized, "tool", **kwargs), input_str)
 
     def on_tool_end(self, output, *, run_id, **kwargs) -> None:
         self._end(run_id, output)
@@ -93,11 +97,13 @@ class TrailMarkCallback(BaseCallbackHandler):
     # ----------------------------------------------------------------- llms
 
     def on_llm_start(self, serialized, prompts, *, run_id, **kwargs) -> None:
-        self._start(run_id, "llm_call", self._name(serialized, "llm"), {"prompts": prompts})
+        self._start(run_id, "llm_call", self._name(serialized, "llm", **kwargs), {"prompts": prompts})
 
     def on_chat_model_start(self, serialized, messages, *, run_id, **kwargs) -> None:
         rendered = [[getattr(m, "content", str(m)) for m in batch] for batch in messages]
-        self._start(run_id, "llm_call", self._name(serialized, "chat_model"), {"messages": rendered})
+        self._start(
+            run_id, "llm_call", self._name(serialized, "chat_model", **kwargs), {"messages": rendered}
+        )
 
     def on_llm_end(self, response, *, run_id, **kwargs) -> None:
         try:
