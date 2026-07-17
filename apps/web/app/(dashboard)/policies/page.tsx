@@ -1,3 +1,5 @@
+import { PolicyRegistry } from "@/components/policies/PolicyRegistry";
+
 export default function PoliciesPage() {
   return (
     <div className="px-8 py-6">
@@ -8,16 +10,7 @@ export default function PoliciesPage() {
           any execution timestamp (SEC Rule 206(4)-7).
         </p>
       </header>
-      <div className="panel max-w-2xl p-8 text-center">
-        <p className="text-sm text-ink-muted">
-          The policy registry and version-controlled policy upload arrive with the
-          policy replay engine in an upcoming phase of the build.
-        </p>
-        <p className="mt-2 font-mono text-[11px] text-ink-faint">
-          Ledger entries already record policy_version_id and policy_version_hash —
-          replay evidence accrues from the first entry.
-        </p>
-      </div>
+      <PolicyRegistry />
     </div>
   );
 }

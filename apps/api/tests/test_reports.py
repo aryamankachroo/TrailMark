@@ -53,9 +53,12 @@ async def test_report_contains_required_sections(client):
     assert "8 entry hashes were recomputed" in text
     # IV. samples include ledger ids
     assert entry["ledger_id"] in compact(text)
-    # V. attestation block
-    assert "Report hash: sha256:" in text
-    assert "Signature: ed25519:" in text
+    # V. attestation block. Long crypto values wrap character-by-character, so
+    # (as with hashes/ledger ids above) check the labels in the raw text and
+    # the values in the whitespace-stripped text.
+    compacted = compact(text)
+    assert "Report hash" in text and "sha256:" in compacted
+    assert "Platform signature" in text and "ed25519:" in compacted
     assert "BEGIN PUBLIC KEY" in text
 
 

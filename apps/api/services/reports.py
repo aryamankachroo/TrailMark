@@ -48,6 +48,11 @@ HEADING = ParagraphStyle("heading", fontName=SERIF_BOLD, fontSize=11, leading=14
                          spaceBefore=14, spaceAfter=4)
 BODY = ParagraphStyle("body", fontName=SERIF, fontSize=10, leading=13.5)
 MONO_SMALL = ParagraphStyle("mono", fontName=MONO, fontSize=7.5, leading=9.5)
+# Long crypto values (hashes, signatures, keys) have no spaces to wrap on;
+# wordWrap="CJK" lets them break character-by-character inside the margins
+# instead of overflowing the page edge.
+MONO_WRAP = ParagraphStyle("monowrap", fontName=MONO, fontSize=7.5, leading=10, wordWrap="CJK")
+FIELD_LABEL = ParagraphStyle("fieldlabel", fontName=SERIF_BOLD, fontSize=8, leading=11, spaceBefore=5)
 
 TABLE_STYLE = TableStyle([
     ("FONTNAME", (0, 0), (-1, 0), SERIF_BOLD),
@@ -306,11 +311,13 @@ class ReportService:
             BODY,
         ))
         el.append(Spacer(1, 6))
-        el.append(Paragraph(f"Report hash: {attestation['report_hash']}", MONO_SMALL))
-        el.append(Paragraph(f"Signature: {attestation['signature']}", MONO_SMALL))
-        el.append(Spacer(1, 4))
+        el.append(Paragraph("Report hash (SHA-256)", FIELD_LABEL))
+        el.append(Paragraph(attestation["report_hash"], MONO_WRAP))
+        el.append(Paragraph("Platform signature (Ed25519)", FIELD_LABEL))
+        el.append(Paragraph(attestation["signature"], MONO_WRAP))
+        el.append(Paragraph("Platform public key", FIELD_LABEL))
         el.append(Paragraph(
-            attestation["public_key_pem"].replace("\n", "<br/>"), MONO_SMALL))
+            attestation["public_key_pem"].replace("\n", "<br/>"), MONO_WRAP))
 
         def footer(canvas, _doc):
             canvas.saveState()

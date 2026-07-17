@@ -8,8 +8,12 @@ import type {
   ChainVerification,
   EntryListResponse,
   FullEntry,
+  PolicySummary,
+  PolicyVersionDetail,
+  PolicyVersionRecord,
   QueueResponse,
   ReasonCode,
+  ReplayResolution,
 } from "./types";
 
 export class ApiError extends Error {
@@ -91,4 +95,29 @@ export function createAttestation(body: {
   supervisor_role: string;
 }): Promise<AttestationRecord> {
   return api("/v1/attestations", { method: "POST", body: JSON.stringify(body) });
+}
+
+export function listPolicies(): Promise<PolicySummary[]> {
+  return api("/v1/policies");
+}
+
+export function listPolicyVersions(policyId: string): Promise<PolicyVersionRecord[]> {
+  return api(`/v1/policies/${encodeURIComponent(policyId)}/versions`);
+}
+
+export function getPolicyVersion(versionId: string): Promise<PolicyVersionDetail> {
+  return api(`/v1/policies/versions/${encodeURIComponent(versionId)}`);
+}
+
+export function createPolicyVersion(body: {
+  policy_id: string;
+  name: string | null;
+  content: string;
+  effective_at?: string;
+}): Promise<PolicyVersionRecord> {
+  return api("/v1/policies", { method: "POST", body: JSON.stringify(body) });
+}
+
+export function getReplay(ledgerId: string): Promise<ReplayResolution> {
+  return api(`/v1/entries/${encodeURIComponent(ledgerId)}/replay`);
 }

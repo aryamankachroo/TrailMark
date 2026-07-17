@@ -77,13 +77,24 @@ CREATE POLICY audit_entries_insert ON audit_entries FOR INSERT WITH CHECK (TRUE)
 -- No UPDATE/DELETE policies: mutations are denied even if the triggers are dropped.
 
 -- -----------------------------------------------------------------------------
--- policy_versions — every version of every firm policy, content stored in S3.
--- superseded_at is set (once) when a newer version becomes effective; policy
--- content itself is immutable per version (new content = new version row).
+-- policy_versions — every version of every firm policy, content WORM-stored.
+--
+-- Underpins SEC Rule 206(4)-7 policy replay: an examiner must be able to
+-- reconstruct the exact policy text in force at an action's execution
+-- timestamp. Each version carries an effective window [effective_at,
+-- superseded_at); superseded_at is set (once) when a newer version becomes
+-- effective. Policy content itself is immutable per version (new content =
+-- new version row) and is content-addressed by policy_hash.
+--
+-- firm_id scopes the registry per firm (critical constraint: never cross
+-- firms). policy_hash is globally unique — identical content re-uploaded is a
+-- conflict, not a silent duplicate.
 -- -----------------------------------------------------------------------------
 CREATE TABLE policy_versions (
     id                    TEXT PRIMARY KEY,
+    firm_id               TEXT NOT NULL,
     policy_id             TEXT NOT NULL,
+    name                  TEXT,
     version_number        INTEGER NOT NULL,
     policy_hash           TEXT NOT NULL UNIQUE,
     content_s3_key        TEXT NOT NULL,
@@ -91,8 +102,14 @@ CREATE TABLE policy_versions (
     superseded_at         TIMESTAMPTZ,
     created_by_user_id    TEXT NOT NULL,
     created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(policy_id, version_number)
+    UNIQUE(firm_id, policy_id, version_number)
 );
+
+-- Point-in-time replay resolution: "which version of this policy was in force
+-- at timestamp T?" scans a firm's policy by effective window.
+CREATE INDEX idx_policy_versions_replay
+    ON policy_versions(firm_id, policy_id, effective_at DESC);
+CREATE INDEX idx_policy_versions_hash ON policy_versions(policy_hash);
 
 -- -----------------------------------------------------------------------------
 -- supervisory_attestations — FINRA Rule 3110 supervisory review records.

@@ -36,3 +36,6 @@ evidence on demand, satisfying three statutory mandates:
 cd apps/api
 python -m pytest            # unit + integration (integration needs docker compose up)
 ```
+
+Tests run against a dedicated `trailmark_test` database (created automatically),
+so they never disturb the seeded dev/demo data in `trailmark`.

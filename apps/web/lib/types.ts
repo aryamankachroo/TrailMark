@@ -115,3 +115,57 @@ export interface QueueResponse {
   limit: number;
   offset: number;
 }
+
+/** Policy registry + SEC 206(4)-7 replay (mirrors apps/api/models/policy.py). */
+
+export interface PolicyVersionRecord {
+  id: string;
+  firm_id: string;
+  policy_id: string;
+  name: string | null;
+  version_number: number;
+  policy_hash: string;
+  content_s3_key: string;
+  effective_at: string;
+  superseded_at: string | null;
+  created_by_user_id: string;
+  created_at: string;
+}
+
+export interface PolicyVersionDetail extends PolicyVersionRecord {
+  content: string;
+}
+
+export interface PolicySummary {
+  policy_id: string;
+  name: string | null;
+  latest_version_id: string;
+  latest_version_number: number;
+  latest_policy_hash: string;
+  version_count: number;
+  first_effective_at: string;
+  latest_effective_at: string;
+}
+
+export type ReplayStatus =
+  | "RECONSTRUCTED_CONSISTENT"
+  | "RECONSTRUCTION_DISCREPANCY"
+  | "RECORDED_NOT_IN_REGISTRY";
+
+export interface EffectiveWindow {
+  effective_at: string;
+  superseded_at: string | null;
+}
+
+export interface ReplayResolution {
+  ledger_id: string;
+  execution_timestamp_utc: string;
+  execution_unix_ns: number;
+  recorded_policy_version_id: string;
+  recorded_policy_version_hash: string;
+  status: ReplayStatus;
+  hash_match: boolean;
+  resolved_version: PolicyVersionRecord | null;
+  effective_window: EffectiveWindow | null;
+  policy_content: string | null;
+}

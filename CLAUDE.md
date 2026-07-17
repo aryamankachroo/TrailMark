@@ -20,7 +20,7 @@ recordkeeping, policy replay*. Never use "guardrails" or "drift".
 docker compose -f infrastructure/docker-compose.yml up -d
 
 cd apps/api
-python -m pytest                        # all API tests
+python -m pytest                        # all API tests (dedicated trailmark_test DB, auto-created)
 python -m pytest tests/test_ledger.py -k chain   # single test
 uvicorn main:app --reload               # run API locally (port 8000)
 
